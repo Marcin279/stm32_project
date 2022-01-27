@@ -161,7 +161,7 @@ extern uint32_t temperatura;
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-	uint32_t result3;
+//	uint32_t result3;
 
 	fotorezystor = (uint16_t)(3.3 * (double)ADCDMABuff[0] / 4.095);    // [mV]
 	temperatura = ((uint16_t)(3.3 * (double)ADCDMABuff[1] / 4.095) - 500) / 10;
