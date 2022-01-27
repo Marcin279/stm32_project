@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
+#include "dma.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -55,7 +57,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+uint16_t ADCDMABuff[3];
 /* USER CODE END 0 */
 
 /**
@@ -88,9 +90,13 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_TIM1_Init();
+  MX_ADC1_Init();
+  MX_DMA_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim1);
-
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)ADCDMABuff, 3);
+  HAL_TIM_Base_Start_IT(&htim2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -150,7 +156,22 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+extern uint32_t fotorezystor;
+extern uint32_t temperatura;
 
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	uint32_t result3;
+
+	fotorezystor = (uint16_t)(3.3 * (double)ADCDMABuff[0] / 4.095);    // [mV]
+	temperatura = ((uint16_t)(3.3 * (double)ADCDMABuff[1] / 4.095) - 500) / 10;
+//	result3 = (uint16_t)(3.3 * (double)ADCDMABuff[2] / 4.095);
+
+//	uint8_t size;
+//	size = sprintf(txData, "%d[mV]\t%d[C]\t%d[mV]\r\n", ADCRes, result2, result3);
+//
+//	HAL_UART_Transmit_DMA(&huart2, txData, size);
+}
 /* USER CODE END 4 */
 
 /**
