@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
+#include "dma.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -44,7 +46,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint16_t ADCDMABuff[2];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -55,7 +57,16 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+int __io_putchar(int ch) {
+	HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
+return ch;
+}
 
+uint32_t ADCRes;
+uint32_t fotorezystor;
+uint32_t temperatura;
+
+volatile uint8_t RXdata;
 /* USER CODE END 0 */
 
 /**
@@ -87,16 +98,26 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_DMA_Init();
   MX_TIM1_Init();
+  MX_ADC1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim1);
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)ADCDMABuff, 2);
+  HAL_TIM_Base_Start_IT(&htim2);
 
+  HAL_UART_Receive_IT(&huart2, &RXdata, 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
   while (1)
   {
+//	  	ADCRes = HAL_ADC_GetValue(&hadc1);                    // 0-4095 == 0-3.3V
+//	  	fotorezystor = ADCDMABuff[0];
+//	  	fotorezystor = (uint16_t)(3.3 * (double)fotorezystor / 4.095);    // [mV]
 
     /* USER CODE END WHILE */
 
@@ -151,6 +172,37 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+
+//	ADCRes = HAL_ADC_GetValue(&hadc1);                    // 0-4095 == 0-3.3V
+	fotorezystor = ADCDMABuff[0];
+	fotorezystor = (uint16_t)(3.3 * (double)fotorezystor / 4.095);    // [mV]
+
+	temperatura = ((uint16_t)(3.3 * (double)ADCDMABuff[1] / 4.095) - 500) / 10;
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+
+	if(RXdata == 's')
+	{
+		printf("Fotorezystor: %d\r\n",(int)fotorezystor);
+	}
+	else if(RXdata == 't')
+	{
+		printf("Temperatura: %d\r\n",(int)temperatura);
+	}
+	else if(RXdata == 'a')
+	{
+		printf("Fotorezystor: %d\tTemperatura: %d\r\n", (int)fotorezystor, (int)temperatura);
+
+	}
+
+
+	HAL_UART_Receive_IT(&huart2, &RXdata, 1);
+
+}
 /* USER CODE END 4 */
 
 /**
