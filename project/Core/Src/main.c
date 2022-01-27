@@ -27,6 +27,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "function.h"
+#include "stdio.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -171,7 +173,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+int nadawaj = 1;
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
 
@@ -188,21 +190,27 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	if(RXdata == 's')
 	{
 		printf("Fotorezystor: %d\r\n",(int)fotorezystor);
+		nadawaj = 0;
 	}
 	else if(RXdata == 't')
 	{
 		printf("Temperatura: %d\r\n",(int)temperatura);
+		nadawaj = 0;
 	}
 	else if(RXdata == 'a')
 	{
-		printf("Fotorezystor: %d\tTemperatura: %d\r\n", (int)fotorezystor, (int)temperatura);
-
+//		printf("Fotorezystor: %d\tTemperatura: %d\r\n", (int)fotorezystor, (int)temperatura);
+		nadawaj = 1;
 	}
-
 
 	HAL_UART_Receive_IT(&huart2, &RXdata, 1);
 
 }
+
+//void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
+//	printf("Fotorezystor: %d\tTemperatura: %d\r\n", (int)fotorezystor, (int)temperatura);
+////	HAL_UART_Transmit_IT(huart, pData, Size)
+//}
 
 /* USER CODE END 4 */
 
