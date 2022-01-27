@@ -37,6 +37,9 @@ extern ADC_HandleTypeDef hadc1;
 /* USER CODE BEGIN Private defines */
 uint32_t fotorezystor;
 uint32_t temperatura;
+
+uint32_t Temperature;
+uint32_t Vsense;
 /* USER CODE END Private defines */
 
 void MX_ADC1_Init(void);

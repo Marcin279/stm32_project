@@ -95,14 +95,32 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim1);
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)ADCDMABuff, 3);
+//  HAL_ADC_Start_DMA(hadc, pData, Length)MA(&hadc1, (uint32_t *)ADCDMABuff, 3);
   HAL_TIM_Base_Start_IT(&htim2);
+
+  HAL_ADC_Start(&hadc1);
+  uint16_t PomiarADC;
+
+  const float V25 = 0.76; // [Volts]
+  const float Avg_slope = 0.0025; //[Volts/degree]
+  const float SupplyVoltage = 3.0; // [Volts]
+  const float ADCResolution = 4095.0;
+
+  extern uint32_t Temperature;
+  extern uint32_t Vsense;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK) { // Oczekiwanie na zakonczenie konwersji
+
+	  		PomiarADC = HAL_ADC_GetValue(&hadc1);// Pobranie zmierzonej wartosci
+	  		Vsense = (SupplyVoltage*PomiarADC)/ADCResolution;// Przeliczenie wartosci zmierzonej na napiecie
+	  		Temperature = ((Vsense-V25)/Avg_slope)+25;// Obliczenie temperatury
+
+	  		HAL_ADC_Start(&hadc1);// Rozpoczecie nowej konwersji
 
     /* USER CODE END WHILE */
 
@@ -156,15 +174,15 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-extern uint32_t fotorezystor;
-extern uint32_t temperatura;
+//extern uint32_t fotorezystor;
+//extern uint32_t temperatura;
 
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
-{
-//	uint32_t result3;
-
-	fotorezystor = (uint16_t)(3.3 * (double)ADCDMABuff[0] / 4.095);    // [mV]
-	temperatura = ((uint16_t)(3.3 * (double)ADCDMABuff[1] / 4.095) - 500) / 10;
+//void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+//{
+////	uint32_t result3;
+//
+//	fotorezystor = (uint16_t)(3.3 * (double)ADCDMABuff[0] / 4.095);    // [mV]
+//	temperatura = ((uint16_t)(3.3 * (double)ADCDMABuff[1] / 4.095) - 500) / 10;
 //	result3 = (uint16_t)(3.3 * (double)ADCDMABuff[2] / 4.095);
 
 //	uint8_t size;

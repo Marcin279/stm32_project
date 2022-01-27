@@ -188,7 +188,7 @@ uint32_t dziesiatki;
 uint32_t jednosci;
 extern uint32_t fotorezystor;
 extern uint32_t temperatura;
-
+extern uint32_t Vsense;
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	if(GPIO_Pin == S1_Pin){
@@ -204,10 +204,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 	if(htim == &htim1){
 
-		  tysiace = (double)(fotorezystor/1000);
-		  setki  = (double)(fotorezystor/100 - tysiace*10);
-		  dziesiatki = (double)(fotorezystor/10 - tysiace*100 - setki*10);
-		  jednosci = fotorezystor%10;
+		  tysiace = (double)(Vsense/1000);
+		  setki  = (double)(Vsense/100 - tysiace*10);
+		  dziesiatki = (double)(Vsense/10 - tysiace*100 - setki*10);
+		  jednosci = Vsense % 10;
 
 		  if (cnt == 0){
 			 czas_wyswietlacz_1 ++;
